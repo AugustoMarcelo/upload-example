@@ -1,5 +1,6 @@
 const express = require('express');
 const morgan = require('morgan');
+require('./config/database');
 
 const app = express();
 
