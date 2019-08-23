@@ -22,7 +22,7 @@ const storageTypes = {
   s3: multerS3({
     s3: new aws.S3(),
     // Nome do bucket criado na aws
-    bucket: 'uploadexampleclass',
+    bucket: process.env.AWS_BUCKET_NAME,
     // Força o navegador a abrir o arquivo com o content-type da imagem. Por padrão, ele faria o download
     contentType: multerS3.AUTO_CONTENT_TYPE,
     // Permite que os uploads feitos possam ser lidos por qualquer usuário
@@ -41,7 +41,7 @@ const storageTypes = {
 
 module.exports = {
   dest: path.resolve(__dirname, '..', '..', 'tmp', 'uploads'),
-  storage: storageTypes['s3'],
+  storage: storageTypes[process.env.STORAGE_TYPE],
   // Será permitido upload de imagens com no máximo 2MB
   limits: {
     fileSize: 2 * 1024 * 1024,
