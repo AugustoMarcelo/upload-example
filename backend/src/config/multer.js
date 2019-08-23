@@ -1,14 +1,33 @@
 const multer = require('multer');
 const path = require('path');
 const crypto = require('crypto');
+const aws = require('aws-sdk');
+const multerS3 = require('multer-s3');
 
-module.exports = {
-  dest: path.resolve(__dirname, '..', '..', 'tmp', 'uploads'),
-  storage: multer.diskStorage({
+const storageTypes = {
+  local: multer.diskStorage({
     destination: (request, file, callback) => {
       callback(null, path.resolve(__dirname, '..', '..', 'tmp', 'uploads'),)
     },
     filename: (request, file, callback) => {
+      crypto.randomBytes(16, (error, hash) => {
+        if (error) callback(error);
+
+        file.key = `${hash.toString('hex')}-${file.originalname}`;
+
+        callback(null, file.key);
+      });
+    }
+  }),
+  s3: multerS3({
+    s3: new aws.S3(),
+    // Nome do bucket criado na aws
+    bucket: 'uploadexampleclass',
+    // Força o navegador a abrir o arquivo com o content-type da imagem. Por padrão, ele faria o download
+    contentType: multerS3.AUTO_CONTENT_TYPE,
+    // Permite que os uploads feitos possam ser lidos por qualquer usuário
+    acl: 'public-read',
+    key: (request, file, callback) => {
       crypto.randomBytes(16, (error, hash) => {
         if (error) callback(error);
 
@@ -18,6 +37,11 @@ module.exports = {
       });
     }
   }),
+};
+
+module.exports = {
+  dest: path.resolve(__dirname, '..', '..', 'tmp', 'uploads'),
+  storage: storageTypes['s3'],
   // Será permitido upload de imagens com no máximo 2MB
   limits: {
     fileSize: 2 * 1024 * 1024,
